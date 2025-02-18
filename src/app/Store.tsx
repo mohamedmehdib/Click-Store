@@ -10,7 +10,7 @@ import Navbar from "./Navbar";
 const poppins = Poppins({ subsets: ["latin"], weight: "400" });
 
 interface Items {
-  id: number; 
+  id: number;
   name: string;
   price: number;
   image_url?: string;
@@ -130,6 +130,8 @@ export default function TopSeller() {
 
   return (
     <div className="bg-blue-50 min-h-screen py-10" ref={topRef}>
+      {/* Hidden H1 for SEO */}
+      <h1 className="sr-only">Top Sellers at Click Store TN - Best Deals on Films, PS5 Consoles, Games, and Accessories in Tunisia</h1>
       <Navbar cartUpdated={cartUpdated} />
       <h1 className={`${poppins.className} text-4xl md:text-5xl text-center text-blue-600 mb-8`}>
         Boutique
@@ -215,7 +217,7 @@ export default function TopSeller() {
               <div className="relative aspect-square">
                 <Image
                   src={item.image_url || "/default-image.png"}
-                  alt={item.name}
+                  alt={`${item.name} - Available at Click Store TN for ${item.price} Dt`}
                   fill
                   className="object-cover"
                 />

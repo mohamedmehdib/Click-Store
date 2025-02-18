@@ -16,7 +16,6 @@ export default function Hero() {
 
   return (
     <section className="md:h-screen flex md:flex-row flex-col-reverse items-center md:justify-around justify-center bg-[#060606] relative overflow-hidden pt-10 md:py-10">
-      {/* Hidden H1 for SEO */}
       <h1 className="sr-only">Click Store TN - Best Deals on Films, PS5 Consoles, Games, and Accessories in Tunisia</h1>
       <Image
         src="/click.bmp"
