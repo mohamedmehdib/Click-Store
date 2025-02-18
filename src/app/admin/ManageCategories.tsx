@@ -65,7 +65,7 @@ export default function ManageCategories() {
       setNewSubcategory("");
       fetchCategories();
     }
-    setIsSubmitting(null); // Reset submission state
+    setIsSubmitting(null);
   };
 
   const handleDeleteCategory = async (categoryId: number) => {

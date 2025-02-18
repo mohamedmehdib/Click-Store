@@ -21,7 +21,6 @@ export default function Home() {
         <meta name="robots" content="index, follow" />
       </Head>
 
-      {/* Main Content */}
       <div className="min-h-screen">
         <Hero />
         <Store />

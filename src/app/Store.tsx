@@ -130,7 +130,6 @@ export default function TopSeller() {
 
   return (
     <div className="bg-blue-50 min-h-screen py-10" ref={topRef}>
-      {/* Hidden H1 for SEO */}
       <h1 className="sr-only">Top Sellers at Click Store TN - Best Deals on Films, PS5 Consoles, Games, and Accessories in Tunisia</h1>
       <Navbar cartUpdated={cartUpdated} />
       <h1 className={`${poppins.className} text-4xl md:text-5xl text-center text-blue-600 mb-8`}>
