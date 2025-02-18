@@ -9,7 +9,7 @@ import Navbar from "./Navbar";
 
 const poppins = Poppins({ subsets: ["latin"], weight: "400" });
 
-interface Sneaker {
+interface Items {
   id: number; 
   name: string;
   price: number;
@@ -31,8 +31,8 @@ interface Category {
 
 export default function TopSeller() {
   const { user } = useAuth();
-  const [sneakers, setSneakers] = useState<Sneaker[]>([]);
-  const [filteredSneakers, setFilteredSneakers] = useState<Sneaker[]>([]);
+  const [items, setItems] = useState<Items[]>([]);
+  const [filteredIems, setFilteredItems] = useState<Items[]>([]);
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -73,9 +73,9 @@ export default function TopSeller() {
       if (selectedSubcategory !== "All") query = query.eq("subcategory", selectedSubcategory);
 
       const { data, error } = await query;
-      if (error) console.error("Error fetching sneakers:", error.message);
+      if (error) console.error("Error fetching items:", error.message);
       else {
-        setSneakers(data || []);
+        setItems(data || []);
         setCurrentPage(1);
       }
     };
@@ -84,8 +84,8 @@ export default function TopSeller() {
 
   useEffect(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    setFilteredSneakers(sneakers.slice(start, start + itemsPerPage));
-  }, [sneakers, currentPage, itemsPerPage]);
+    setFilteredItems(items.slice(start, start + itemsPerPage));
+  }, [items, currentPage, itemsPerPage]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -99,7 +99,7 @@ export default function TopSeller() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleAddToCart = async (item: Sneaker) => {
+  const handleAddToCart = async (item: Items) => {
     if (!user) return alert("Please sign in to add items to your cart.");
     setAddedItems((prev) => new Set(prev).add(item.name));
 
@@ -207,7 +207,7 @@ export default function TopSeller() {
         </div>
 
         <div className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-12 px-8">
-          {filteredSneakers.map((item) => (
+          {filteredIems.map((item) => (
             <div
               key={item.id}
               className="bg-white h-fit rounded-lg overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300"
@@ -248,7 +248,7 @@ export default function TopSeller() {
               </div>
             </div>
           ))}
-          {filteredSneakers.length === 0 && (
+          {filteredIems.length === 0 && (
             <p className="text-center text-gray-500 text-xl col-span-full">
               No items available at the moment.
             </p>
@@ -257,7 +257,7 @@ export default function TopSeller() {
       </div>
 
       <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: Math.ceil(sneakers.length / itemsPerPage) }).map((_, i) => (
+        {Array.from({ length: Math.ceil(items.length / itemsPerPage) }).map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentPage(i + 1)}
