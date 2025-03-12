@@ -217,7 +217,9 @@ export default function TopSeller() {
                 <Image
                   src={item.image_url || "/default-image.png"}
                   alt={`${item.name} - Available at Click Store TN for ${item.price} Dt`}
-                  fill
+                  height={400}
+                  width={400}
+                  unoptimized
                   className="object-cover"
                 />
               </div>

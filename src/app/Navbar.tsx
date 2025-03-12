@@ -70,7 +70,7 @@ export default function Navbar({ cartUpdated }: NavbarProps) {
       <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css"></link>
       <div className="flex justify-between items-center h-20 px-5">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} className="h-16 w-16" />
+          <Image src="/logo.png" alt="Logo" width={100} height={100} className="h-16 w-16" unoptimized />
         </Link>
 
         <div className="md:hidden cursor-pointer z-50" onClick={toggleMenu}>

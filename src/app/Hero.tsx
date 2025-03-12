@@ -23,7 +23,7 @@ export default function Hero() {
         width={1000}
         height={1000}
         style={{ transform: `translateY(${scrollY * 3}px)` }}
-        loading="lazy"
+        unoptimized
       />
     </section>
   );

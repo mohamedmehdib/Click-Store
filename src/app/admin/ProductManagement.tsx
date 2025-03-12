@@ -270,6 +270,7 @@ const ProductManagement = () => {
                     alt={product.name}
                     width={50}
                     height={50}
+                    unoptimized
                     className="block mx-auto"
                   />
                 </td>

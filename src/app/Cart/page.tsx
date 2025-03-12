@@ -126,7 +126,9 @@ const Cart = () => {
                     <Image
                       src={item.image_url || "/default-image.png"}
                       alt={item.name}
-                      fill
+                      height={200}
+                      width={200}
+                      unoptimized
                       className="object-cover rounded-lg"
                     />
                   </div>
