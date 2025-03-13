@@ -45,9 +45,8 @@ export default function TopSeller() {
 
   const itemsPerPage = columns * 6;
   const topRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    if (topRef.current) {
+    if (topRef.current && (searchQuery || selectedCategory !== "All" || selectedSubcategory !== "All" || currentPage !== 1)) {
       topRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [searchQuery, selectedCategory, selectedSubcategory, currentPage]);
