@@ -75,51 +75,71 @@ const ProductManagement = () => {
   };
 
   const handleSaveProduct = async () => {
-    if (!imageFile) {
+    // Validation: Only require image for new products
+    if (!editingId && !imageFile) {
+      setErrorMessage("An image is required for new products.");
+      return;
+    }
+
+    // If editing and no existing image_url AND no new image file
+    if (editingId && !form.image_url && !imageFile) {
       setErrorMessage("An image is required.");
       return;
     }
 
     setIsSubmitting(true);
+    setErrorMessage("");
+    
     let imageUrl = form.image_url;
 
+    // Only upload if a new image file was selected
     if (imageFile) {
       const uploadedImageUrl = await uploadImage(imageFile);
       if (uploadedImageUrl) {
         imageUrl = uploadedImageUrl;
+      } else {
+        setErrorMessage("Failed to upload image.");
+        setIsSubmitting(false);
+        return;
       }
     }
 
-    const productData = { ...form, image_url: imageUrl };
+    const productData = { 
+      ...form, 
+      image_url: imageUrl,
+      price: Number(form.price)
+    };
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("products")
-        .update(productData)
-        .eq("id", editingId);
-      if (error) {
-        console.error("Error updating product:", error.message);
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("products").insert(productData);
+        if (error) throw error;
       }
-    } else {
-      const { error } = await supabase.from("products").insert(productData);
-      if (error) {
-        console.error("Error adding product:", error.message);
-      }
+
+      // Reset form
+      setForm({
+        name: "",
+        price: 0,
+        image_url: "",
+        category: "",
+        subcategory: "",
+        is_available: true,
+      });
+      setImageFile(null);
+      setEditingId(null);
+      fetchProducts();
+    } catch (error: any) {
+      console.error("Error saving product:", error.message);
+      setErrorMessage(error.message || "Failed to save product");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setForm({
-      name: "",
-      price: 0,
-      image_url: "",
-      category: "",
-      subcategory: "",
-      is_available: true,
-    });
-    setImageFile(null);
-    setEditingId(null);
-    setErrorMessage("");
-    fetchProducts();
-    setIsSubmitting(false);
   };
 
   const handleEditProduct = (product: Product) => {
@@ -131,7 +151,9 @@ const ProductManagement = () => {
       subcategory: product.subcategory,
       is_available: product.is_available,
     });
+    setImageFile(null); // Clear any previously selected file
     setEditingId(product.id);
+    setErrorMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -159,7 +181,10 @@ const ProductManagement = () => {
     ? categories.find((cat) => cat.name === form.category)?.subcategories || []
     : [];
 
-  const isFormValid = !!imageFile;
+  // Form is valid if:
+  // 1. Editing: Always valid (don't require new image)
+  // 2. Adding new: Requires image file
+  const isFormValid = editingId ? true : !!imageFile;
 
   return (
     <div className="space-y-6">
@@ -211,12 +236,39 @@ const ProductManagement = () => {
             </option>
           ))}
         </select>
-        <input
-          type="file"
-          className="w-full p-2 border rounded"
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-          required
-        />
+        
+        <div className="space-y-2">
+          <label className="block font-medium">Product Image:</label>
+          <input
+            type="file"
+            className="w-full p-2 border rounded"
+            onChange={(e) => {
+              setImageFile(e.target.files?.[0] || null);
+              setErrorMessage("");
+            }}
+            accept="image/*"
+          />
+          {editingId && form.image_url && !imageFile && (
+            <div className="mt-2 p-2 bg-gray-50 rounded border">
+              <p className="text-sm text-gray-600 mb-1">Current image (select a new file only if you want to change it):</p>
+              <div className="flex items-center space-x-4">
+                <Image
+                  src={`${form.image_url}?w=100&q=75`}
+                  alt="Current product"
+                  width={60}
+                  height={60}
+                  unoptimized
+                  className="rounded"
+                />
+                <span className="text-sm text-blue-600">Image will be kept as-is</span>
+              </div>
+            </div>
+          )}
+          {!editingId && (
+            <p className="text-sm text-gray-500">Image is required for new products</p>
+          )}
+        </div>
+        
         <div className="flex items-center space-x-2">
           <span>Available:</span>
           <input
@@ -226,17 +278,39 @@ const ProductManagement = () => {
             className="w-6 h-6"
           />
         </div>
+        
         <button
           onClick={handleSaveProduct}
           className={`bg-green-500 text-white px-4 py-2 rounded-lg ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
-          disabled={isSubmitting || !isFormValid}
+          disabled={isSubmitting}
         >
-          {editingId ? "Update Product" : "Add Product"}
+          {isSubmitting ? "Saving..." : editingId ? "Update Product" : "Add Product"}
         </button>
+        
+        {editingId && (
+          <button
+            onClick={() => {
+              setForm({
+                name: "",
+                price: 0,
+                image_url: "",
+                category: "",
+                subcategory: "",
+                is_available: true,
+              });
+              setImageFile(null);
+              setEditingId(null);
+              setErrorMessage("");
+            }}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+          >
+            Cancel Edit
+          </button>
+        )}
       </div>
 
       <div>
-        <h3 className="text-xl">Existing Products</h3>
+        <h3 className="text-xl mb-4">Existing Products</h3>
         <table className="w-full border">
           <thead>
             <tr>
