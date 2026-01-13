@@ -34,6 +34,7 @@ const ProductManagement = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -135,7 +136,6 @@ const ProductManagement = () => {
       setEditingId(null);
       fetchProducts();
     } catch (error) {
-      // Remove ': any' type annotation
       console.error("Error saving product:", error);
       setErrorMessage("Failed to save product. Please try again.");
     } finally {
@@ -152,18 +152,47 @@ const ProductManagement = () => {
       subcategory: product.subcategory,
       is_available: product.is_available,
     });
-    setImageFile(null); // Clear any previously selected file
+    setImageFile(null);
     setEditingId(product.id);
     setErrorMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDeleteProduct = async (id: number) => {
+    // Show confirmation dialog
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      return; // User cancelled
+    }
+
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
       console.error("Error deleting product:", error.message);
+      alert("Failed to delete product. Please try again.");
+    } else {
+      // Optional: Show success message
+      alert("Product deleted successfully!");
+      fetchProducts();
     }
-    fetchProducts();
+  };
+
+  // Alternative: Custom confirmation modal (more stylish)
+  const handleDeleteClick = (id: number, productName: string) => {
+    setShowDeleteConfirm(id);
+  };
+
+  const confirmDelete = async (id: number) => {
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting product:", error.message);
+      alert("Failed to delete product. Please try again.");
+    } else {
+      fetchProducts();
+    }
+    setShowDeleteConfirm(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(null);
   };
 
   const handleToggleAvailability = async (product: Product) => {
@@ -189,6 +218,30 @@ const ProductManagement = () => {
       {errorMessage && (
         <div className="bg-red-500 text-white p-2 rounded">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDelete(showDeleteConfirm)}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -351,12 +404,23 @@ const ProductManagement = () => {
                   >
                     Edit
                   </button>
+                  {/* Using simple browser confirm */}
                   <button
                     onClick={() => handleDeleteProduct(product.id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                   >
                     Delete
                   </button>
+                  
+                  {/* OR using custom modal (uncomment if you prefer) */}
+                  {/* 
+                  <button
+                    onClick={() => handleDeleteClick(product.id, product.name)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                  */}
                 </td>
               </tr>
             ))}
