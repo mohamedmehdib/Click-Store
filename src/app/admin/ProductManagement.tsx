@@ -134,9 +134,10 @@ const ProductManagement = () => {
       setImageFile(null);
       setEditingId(null);
       fetchProducts();
-    } catch (error: any) {
-      console.error("Error saving product:", error.message);
-      setErrorMessage(error.message || "Failed to save product");
+    } catch (error) {
+      // Remove ': any' type annotation
+      console.error("Error saving product:", error);
+      setErrorMessage("Failed to save product. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -180,11 +181,6 @@ const ProductManagement = () => {
   const filteredSubcategories = form.category
     ? categories.find((cat) => cat.name === form.category)?.subcategories || []
     : [];
-
-  // Form is valid if:
-  // 1. Editing: Always valid (don't require new image)
-  // 2. Adding new: Requires image file
-  const isFormValid = editingId ? true : !!imageFile;
 
   return (
     <div className="space-y-6">
