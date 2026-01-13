@@ -11,7 +11,7 @@ interface Product {
   category: string;
   subcategory: string;
   is_available: boolean;
-  created_at: string; // Add this field
+  created_at: string;
 }
 
 interface Category {
@@ -46,10 +46,10 @@ const ProductManagement = () => {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .order("created_at", { ascending: false }); // Newest first
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching products:", error.message);
+      console.error("Erreur lors du chargement des produits:", error.message);
     } else {
       setProducts(data || []);
     }
@@ -58,7 +58,7 @@ const ProductManagement = () => {
   const fetchCategories = async () => {
     const { data, error } = await supabase.from("categories").select("*");
     if (error) {
-      console.error("Error fetching categories:", error.message);
+      console.error("Erreur lors du chargement des catégories:", error.message);
     } else {
       setCategories(data || []);
     }
@@ -69,7 +69,7 @@ const ProductManagement = () => {
     const { error } = await supabase.storage.from("products").upload(fileName, file);
 
     if (error) {
-      console.error("Error uploading image:", error.message);
+      console.error("Erreur lors du téléversement de l'image:", error.message);
       return null;
     }
 
@@ -81,15 +81,13 @@ const ProductManagement = () => {
   };
 
   const handleSaveProduct = async () => {
-    // Validation: Only require image for new products
     if (!editingId && !imageFile) {
-      setErrorMessage("An image is required for new products.");
+      setErrorMessage("Une image est requise pour les nouveaux produits.");
       return;
     }
 
-    // If editing and no existing image_url AND no new image file
     if (editingId && !form.image_url && !imageFile) {
-      setErrorMessage("An image is required.");
+      setErrorMessage("Une image est requise.");
       return;
     }
 
@@ -98,13 +96,12 @@ const ProductManagement = () => {
     
     let imageUrl = form.image_url;
 
-    // Only upload if a new image file was selected
     if (imageFile) {
       const uploadedImageUrl = await uploadImage(imageFile);
       if (uploadedImageUrl) {
         imageUrl = uploadedImageUrl;
       } else {
-        setErrorMessage("Failed to upload image.");
+        setErrorMessage("Échec du téléversement de l'image.");
         setIsSubmitting(false);
         return;
       }
@@ -128,7 +125,6 @@ const ProductManagement = () => {
         if (error) throw error;
       }
 
-      // Reset form
       setForm({
         name: "",
         price: 0,
@@ -139,10 +135,10 @@ const ProductManagement = () => {
       });
       setImageFile(null);
       setEditingId(null);
-      fetchProducts(); // This will fetch products ordered by created_at
+      fetchProducts();
     } catch (error) {
-      console.error("Error saving product:", error);
-      setErrorMessage("Failed to save product. Please try again.");
+      console.error("Erreur lors de la sauvegarde du produit:", error);
+      setErrorMessage("Échec de la sauvegarde du produit. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);
     }
@@ -164,27 +160,27 @@ const ProductManagement = () => {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.")) {
       return;
     }
 
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
-      console.error("Error deleting product:", error.message);
-      alert("Failed to delete product. Please try again.");
+      console.error("Erreur lors de la suppression du produit:", error.message);
+      alert("Échec de la suppression du produit. Veuillez réessayer.");
     } else {
-      alert("Product deleted successfully!");
-      fetchProducts(); // Re-fetch ordered products
+      alert("Produit supprimé avec succès !");
+      fetchProducts();
     }
   };
 
   const confirmDelete = async (id: number) => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
-      console.error("Error deleting product:", error.message);
-      alert("Failed to delete product. Please try again.");
+      console.error("Erreur lors de la suppression du produit:", error.message);
+      alert("Échec de la suppression du produit. Veuillez réessayer.");
     } else {
-      fetchProducts(); // Re-fetch ordered products
+      fetchProducts();
     }
     setShowDeleteConfirm(null);
   };
@@ -200,19 +196,18 @@ const ProductManagement = () => {
       .update({ is_available: updatedStatus })
       .eq("id", product.id);
     if (error) {
-      console.error("Error toggling availability:", error.message);
+      console.error("Erreur lors du changement de disponibilité:", error.message);
     }
-    fetchProducts(); // Re-fetch ordered products
+    fetchProducts();
   };
 
   const filteredSubcategories = form.category
     ? categories.find((cat) => cat.name === form.category)?.subcategories || []
     : [];
 
-  // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -223,7 +218,7 @@ const ProductManagement = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-center">Product Management</h2>
+      <h2 className="text-2xl font-semibold text-center">Gestion des Produits</h2>
 
       {errorMessage && (
         <div className="bg-red-500 text-white p-2 rounded">
@@ -231,24 +226,23 @@ const ProductManagement = () => {
         </div>
       )}
 
-      {/* Custom Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
-            <p className="mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
+            <h3 className="text-xl font-semibold mb-4">Confirmer la suppression</h3>
+            <p className="mb-6">Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.</p>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={cancelDelete}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                Cancel
+                Annuler
               </button>
               <button
                 onClick={() => confirmDelete(showDeleteConfirm)}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
-                Delete
+                Supprimer
               </button>
             </div>
           </div>
@@ -258,14 +252,14 @@ const ProductManagement = () => {
       <div className="space-y-4">
         <input
           type="text"
-          placeholder="Product Name"
+          placeholder="Nom du produit"
           className="w-full p-2 border rounded"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <input
           type="number"
-          placeholder="Price"
+          placeholder="Prix"
           className="w-full p-2 border rounded"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
@@ -275,7 +269,7 @@ const ProductManagement = () => {
           onChange={(e) => setForm({ ...form, category: e.target.value, subcategory: "" })}
           className="w-full p-2 border rounded"
         >
-          <option value="">Select Category</option>
+          <option value="">Sélectionner une catégorie</option>
           {categories.map((category) => (
             <option key={category.id} value={category.name}>
               {category.name}
@@ -288,7 +282,7 @@ const ProductManagement = () => {
           className="w-full p-2 border rounded"
           disabled={!filteredSubcategories.length}
         >
-          <option value="">Select Subcategory</option>
+          <option value="">Sélectionner une sous-catégorie</option>
           {filteredSubcategories.map((subcategory, idx) => (
             <option key={idx} value={subcategory}>
               {subcategory}
@@ -297,7 +291,7 @@ const ProductManagement = () => {
         </select>
         
         <div className="space-y-2">
-          <label className="block font-medium">Product Image:</label>
+          <label className="block font-medium">Image du produit :</label>
           <input
             type="file"
             className="w-full p-2 border rounded"
@@ -309,27 +303,27 @@ const ProductManagement = () => {
           />
           {editingId && form.image_url && !imageFile && (
             <div className="mt-2 p-2 bg-gray-50 rounded border">
-              <p className="text-sm text-gray-600 mb-1">Current image (select a new file only if you want to change it):</p>
+              <p className="text-sm text-gray-600 mb-1">Image actuelle (sélectionnez un nouveau fichier uniquement si vous souhaitez la changer) :</p>
               <div className="flex items-center space-x-4">
                 <Image
                   src={`${form.image_url}?w=100&q=75`}
-                  alt="Current product"
+                  alt="Produit actuel"
                   width={60}
                   height={60}
                   unoptimized
                   className="rounded"
                 />
-                <span className="text-sm text-blue-600">Image will be kept as-is</span>
+                <span className="text-sm text-blue-600">L'image sera conservée telle quelle</span>
               </div>
             </div>
           )}
           {!editingId && (
-            <p className="text-sm text-gray-500">Image is required for new products</p>
+            <p className="text-sm text-gray-500">Une image est requise pour les nouveaux produits</p>
           )}
         </div>
         
         <div className="flex items-center space-x-2">
-          <span>Available:</span>
+          <span>Disponible :</span>
           <input
             type="checkbox"
             checked={form.is_available}
@@ -343,7 +337,7 @@ const ProductManagement = () => {
           className={`bg-green-500 text-white px-4 py-2 rounded-lg ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Saving..." : editingId ? "Update Product" : "Add Product"}
+          {isSubmitting ? "Enregistrement..." : editingId ? "Mettre à jour le produit" : "Ajouter le produit"}
         </button>
         
         {editingId && (
@@ -363,22 +357,22 @@ const ProductManagement = () => {
             }}
             className="bg-gray-500 text-white px-4 py-2 rounded-lg"
           >
-            Cancel Edit
+            Annuler l'édition
           </button>
         )}
       </div>
 
       <div>
-        <h3 className="text-xl mb-4">Existing Products (Newest First)</h3>
+        <h3 className="text-xl mb-4">Produits existants (Du plus récent au plus ancien)</h3>
         <table className="w-full border">
           <thead>
             <tr>
-              <th className="border px-4 py-2">Created At</th>
-              <th className="border px-4 py-2">Name</th>
-              <th className="border px-4 py-2">Price</th>
-              <th className="border px-4 py-2">Category</th>
-              <th className="border px-4 py-2">Subcategory</th>
-              <th className="border px-4 py-2">Available</th>
+              <th className="border px-4 py-2">Créé le</th>
+              <th className="border px-4 py-2">Nom</th>
+              <th className="border px-4 py-2">Prix</th>
+              <th className="border px-4 py-2">Catégorie</th>
+              <th className="border px-4 py-2">Sous-catégorie</th>
+              <th className="border px-4 py-2">Disponible</th>
               <th className="border px-4 py-2">Image</th>
               <th className="border px-4 py-2">Actions</th>
             </tr>
@@ -416,13 +410,13 @@ const ProductManagement = () => {
                     onClick={() => handleEditProduct(product)}
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                   >
-                    Edit
+                    Éditer
                   </button>
                   <button
                     onClick={() => handleDeleteProduct(product.id)}
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                   >
-                    Delete
+                    Supprimer
                   </button>
                 </td>
               </tr>
