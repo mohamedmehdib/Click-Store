@@ -11,6 +11,7 @@ interface Product {
   category: string;
   subcategory: string;
   is_available: boolean;
+  created_at: string; // Add this field
 }
 
 interface Category {
@@ -42,7 +43,11 @@ const ProductManagement = () => {
   }, []);
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase.from("products").select("*");
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false }); // Newest first
+
     if (error) {
       console.error("Error fetching products:", error.message);
     } else {
@@ -134,7 +139,7 @@ const ProductManagement = () => {
       });
       setImageFile(null);
       setEditingId(null);
-      fetchProducts();
+      fetchProducts(); // This will fetch products ordered by created_at
     } catch (error) {
       console.error("Error saving product:", error);
       setErrorMessage("Failed to save product. Please try again.");
@@ -159,9 +164,8 @@ const ProductManagement = () => {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    // Show confirmation dialog
     if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
-      return; // User cancelled
+      return;
     }
 
     const { error } = await supabase.from("products").delete().eq("id", id);
@@ -169,9 +173,8 @@ const ProductManagement = () => {
       console.error("Error deleting product:", error.message);
       alert("Failed to delete product. Please try again.");
     } else {
-      // Optional: Show success message
       alert("Product deleted successfully!");
-      fetchProducts();
+      fetchProducts(); // Re-fetch ordered products
     }
   };
 
@@ -181,7 +184,7 @@ const ProductManagement = () => {
       console.error("Error deleting product:", error.message);
       alert("Failed to delete product. Please try again.");
     } else {
-      fetchProducts();
+      fetchProducts(); // Re-fetch ordered products
     }
     setShowDeleteConfirm(null);
   };
@@ -199,12 +202,24 @@ const ProductManagement = () => {
     if (error) {
       console.error("Error toggling availability:", error.message);
     }
-    fetchProducts();
+    fetchProducts(); // Re-fetch ordered products
   };
 
   const filteredSubcategories = form.category
     ? categories.find((cat) => cat.name === form.category)?.subcategories || []
     : [];
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -354,10 +369,11 @@ const ProductManagement = () => {
       </div>
 
       <div>
-        <h3 className="text-xl mb-4">Existing Products</h3>
+        <h3 className="text-xl mb-4">Existing Products (Newest First)</h3>
         <table className="w-full border">
           <thead>
             <tr>
+              <th className="border px-4 py-2">Created At</th>
               <th className="border px-4 py-2">Name</th>
               <th className="border px-4 py-2">Price</th>
               <th className="border px-4 py-2">Category</th>
@@ -370,6 +386,9 @@ const ProductManagement = () => {
           <tbody>
             {products.map((product) => (
               <tr key={product.id}>
+                <td className="border px-4 py-2 text-sm">
+                  {formatDate(product.created_at)}
+                </td>
                 <td className="border px-4 py-2">{product.name}</td>
                 <td className="border px-4 py-2">{product.price} Dt</td>
                 <td className="border px-4 py-2">{product.category}</td>
@@ -399,23 +418,12 @@ const ProductManagement = () => {
                   >
                     Edit
                   </button>
-                  {/* Using simple browser confirm */}
                   <button
                     onClick={() => handleDeleteProduct(product.id)}
                     className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                   >
                     Delete
                   </button>
-                  
-                  {/* OR using custom modal (uncomment if you prefer) */}
-                  {/* 
-                  <button
-                    onClick={() => handleDeleteClick(product.id, product.name)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                  */}
                 </td>
               </tr>
             ))}
