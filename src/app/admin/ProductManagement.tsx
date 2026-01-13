@@ -175,11 +175,6 @@ const ProductManagement = () => {
     }
   };
 
-  // Alternative: Custom confirmation modal (more stylish)
-  const handleDeleteClick = (id: number, productName: string) => {
-    setShowDeleteConfirm(id);
-  };
-
   const confirmDelete = async (id: number) => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
